@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    triggers {
+        githubPush() // trigger on GitHub push
+    }
+
+    environment {
+        DOCKERHUB = 'wael75613/react-app'
+        TAG = 'latest'
+        PORT = '3000' // dynamic port variable
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Setup') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'npm run build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t %DOCKERHUB%:%TAG% ."
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                script {
+                    // Dynamic container name to prevent conflicts
+                    env.CONTAINER_NAME = "release-container-${env.BUILD_NUMBER}"
+                }
+                // Run container in background
+                bat "docker run -d --name %CONTAINER_NAME% -p %PORT%:80 %DOCKERHUB%:%TAG%"
+                // Wait a few seconds to let container start
+                bat "ping 127.0.0.1 -n 6 > nul"
+                // Smoke test: check if the app is serving
+                bat "curl -f http://localhost:%PORT% || exit 1"
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                // Archive Vite build folder
+                archiveArtifacts artifacts: 'dist/**'
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds1', // your Jenkins DockerHub credential ID
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    // Login to DockerHub using PAT
+                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                    // Push Docker image
+                    bat 'docker push %DOCKERHUB%:%TAG%'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup container even if pipeline fails
+            bat 'docker rm -f %CONTAINER_NAME% || true'
+        }
+    }
+}

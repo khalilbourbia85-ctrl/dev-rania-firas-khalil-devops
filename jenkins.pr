@@ -1,0 +1,57 @@
+pipeline {
+  agent any
+
+  // WARNING: 
+  // cannot rely on GitHub-trigger here. This pipeline works only if you start it manually.
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Setup') {
+      steps {
+        bat 'npm install'
+      }
+    }
+
+    stage('Build') {
+      steps {
+        bat 'npm run build'
+      }
+    }
+
+    stage('Docker Build') {
+      steps {
+        bat 'docker build -t react-app-pr .'
+      }
+    }
+
+    stage('Run Docker') {
+      steps {
+        bat 'docker run -d --name pr-container -p 3000:80 react-app-pr'
+      }
+    }
+
+    stage('Smoke Test') {
+      steps {
+        sleep 5
+        bat 'curl -f http://localhost:3000 || exit 1'
+      }
+    }
+
+    stage('Archive Artifacts') {
+      steps {
+        archiveArtifacts artifacts: 'dist/**', fingerprint: true
+      }
+    }
+  }
+
+  post {
+    always {
+      bat 'docker rm -f pr-container || true'
+    }
+  }
+}
