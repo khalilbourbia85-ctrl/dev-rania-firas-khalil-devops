@@ -5,6 +5,6 @@ Projet React devops:
 
 -- Khalil Bourbiaa
 
--- Firas Chayah ( le legend)
+-- Firas Chayah
 
 
