@@ -19,7 +19,7 @@ pipeline {
       steps {
         script {
           env.IMG_TAG = env.GIT_TAG_NAME ?: 'latest'
-          bat "docker build -t wael75613/react-app:%IMG_TAG% ."
+          bat "docker build -t khalilbour/react-app:%IMG_TAG% ."
         }
       }
     }
@@ -28,7 +28,7 @@ pipeline {
       steps {
         script {
           env.CONTAINER_NAME = "rel-container-${env.BUILD_NUMBER}"
-          bat "docker run -d --name %CONTAINER_NAME% -p 3000:80 wael75613/react-app:%IMG_TAG%"
+          bat "docker run -d --name %CONTAINER_NAME% -p 3000:80 khalilbour/react-app:%IMG_TAG%"
           sleep 5
           bat "curl -f http://localhost:3000 || exit 1"
         }
@@ -45,12 +45,12 @@ pipeline {
       when { expression { env.GIT_TAG_NAME } }
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-creds',
+          credentialsId: 'dockerhub-credentials',
           usernameVariable: 'USER',
           passwordVariable: 'PASS'
         )]) {
           bat 'echo %PASS% | docker login -u %USER% --password-stdin'
-          bat "docker push wael75613/react-app:%IMG_TAG%"
+          bat "docker push khalilbour/react-app:%IMG_TAG%"
         }
       }
     }
