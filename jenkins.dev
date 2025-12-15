@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB = 'wael75613/react-app'
+        DOCKERHUB = 'khalillbour/react-app'
         TAG = 'latest'
         PORT = '3000' // dynamic port variable
     }
@@ -61,7 +61,7 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds1', // your Jenkins DockerHub credential ID
+                    credentialsId: 'dockerhub-credentials', // your Jenkins DockerHub credential ID
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
