@@ -1,13 +1,56 @@
-import './App.css'
-import Card from './compos/Card'
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ParkingProvider } from './context/ParkingContext';
+import { PaymentProvider } from './context/PaymentContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Sidebar from './components/Sidebar';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
+import ParkingSpots from './pages/ParkingSpots';
+import Vehicles from './pages/Vehicles';
+import Payment from './pages/Payment';
+import Users from './pages/Users';
+import './App.css';
 
-function App() {
+const AppContent = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   return (
-    <>
-      <Card description="Description de l'hotel a3ti li 3andek" title="Hotel Mr Othmen Jnayeh" location="Sousse/sahloul" price="150dt" stars={4} />
-    </>
-  )
+    <div className="app-layout">
+      <Sidebar />
+      <main className="main-content">
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/parking-spots" element={<ParkingSpots />} />
+          <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <ParkingProvider>
+        <PaymentProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </PaymentProvider>
+      </ParkingProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
