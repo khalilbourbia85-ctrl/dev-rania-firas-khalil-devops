@@ -1,13 +1,10 @@
-Projet React WKAN:
+Projet React devops:
 
 
--- Wael Abidi
+-- Rania ELHANI
 
--- Koubayeb Bazzez
+-- Khalil Bourbiaa
 
--- Amira Grissa
-
--- Nadin Awam
+-- Firas Chayah ( le legend)
 
 
-Bon travail !
